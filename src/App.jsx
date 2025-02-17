@@ -16,6 +16,9 @@ import EditReservaPage from "./pages/EditReservaPage";
 import DeleteReservaPage from "./pages/DeleteReservaPage";
 import UsuarioPage from "./pages/UsuarioPage";
 import DeleteUsuarioPage from "./pages/DeleteUsuarioPage";
+import AddUsuario from "./components/AddUsuario";
+import EditReserva from "./components/EditReserva";
+import EditUsuario from "./components/EditUsuario";
 
 
 
@@ -73,6 +76,14 @@ const router = createBrowserRouter([
       {
         path: "usuario/delete/:id",
         element: <DeleteUsuarioPage/>
+      },
+      {
+        path: "usuario/add",
+        element: <AddUsuario/>
+      },
+      {
+        path: "usuario/edit/:id",
+        element: <EditUsuario/>
       }
      
     
