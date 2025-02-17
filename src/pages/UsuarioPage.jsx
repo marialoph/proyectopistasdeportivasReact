@@ -8,7 +8,7 @@ const UsuarioPage = () => {
         <Container>
             <h1>Gestión de Usuarios</h1>
             <UsuarioList />
-            <Button as={Link} to="/mis-reservas/add">
+            <Button as={Link} to="/usuario/add">
             Añadir un nuevo ususario
         </Button>
         </Container>

@@ -3,183 +3,133 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Container, Form, Button } from "react-bootstrap";
 import api from "../services/api";
 
-const EditReserva = () => {
-    const { id } = useParams();
+const EditUsuario = () => {
+    const { id } = useParams(); // Obtener el ID desde la URL
     const navigate = useNavigate();
 
-    const [fecha, setFecha] = useState("");
-    const [instalaciones, setInstalaciones] = useState([]);
-    const [horarios, setHorarios] = useState([]);
-    const [usuarios, setUsuarios] = useState([]);
-    const [instalacionId, setInstalacionId] = useState("");
-    const [horarioId, setHorarioId] = useState("");
-    const [usuarioId, setUsuarioId] = useState("");
+    // Estados para manejar los datos del usuario
+    const [usuario, setUsuario] = useState({
+        username: "",
+        email: "",
+        password: "",
+        tipo: "USER",
+    });
+
+    // Estado para manejar errores
     const [error, setError] = useState("");
 
     useEffect(() => {
-        const cargarDatos = async () => {
+        // Asegurarse de que `id` está presente
+        if (!id) {
+            setError("No se pudo obtener el ID del usuario.");
+            return;
+        }
+
+        const cargarUsuario = async () => {
             try {
-                const resReserva = await api.get(`/mis-reservas/${id}`);
-                const reserva = resReserva.data;
+                console.log("Cargando usuario con ID:", id);
+                const response = await api.get(`/api/usuario/${id}`);
+                console.log("Datos del usuario obtenidos:", response.data);
 
-                setFecha(reserva.fecha);
-                setInstalacionId(reserva.horario.instalacion.id);
-                setHorarioId(reserva.horario.id);
-                setUsuarioId(reserva.usuario.id);
-
-                const resInstalaciones = await api.get("/mis-reservas/instalaciones");
-                setInstalaciones(resInstalaciones.data);
-
-                const resUsuarios = await api.get("/mis-reservas/usuarios");
-                setUsuarios(resUsuarios.data);
-
-                cargarHorarios(reserva.horario.instalacion.id, reserva.fecha);
+                // Si la respuesta es válida, se actualizan los datos del estado
+                if (response.data) {
+                    setUsuario({
+                        username: response.data.username || "",
+                        email: response.data.email || "",
+                        password: response.data.password || "",
+                        tipo: response.data.tipo || "USER",
+                    });
+                } else {
+                    setError("No se encontró el usuario.");
+                }
             } catch (err) {
-                console.log("Error al cargar datos:", err);
+                console.error("Error al cargar usuario:", err);
+                setError("No se pudo cargar los datos del usuario.");
             }
         };
 
-        cargarDatos();
+        cargarUsuario();
     }, [id]);
 
-    const cargarHorarios = async (instalacionId, fechaSeleccionada) => {
-        if (!instalacionId || !fechaSeleccionada) return;
-        try {
-            const resHorarios = await api.get(`/mis-reservas/horario/instalacion/${instalacionId}/fecha/${fechaSeleccionada}`);
-            setHorarios(resHorarios.data);
-        } catch (err) {
-            console.log("Error al obtener horarios:", err);
-            setHorarios([]);
-        }
+    // Manejador para actualizar el estado cuando cambia el formulario
+    const handleChange = (e) => {
+        setUsuario({ ...usuario, [e.target.name]: e.target.value });
     };
 
-    // Verificar si la fecha es válida
-    const verificarFecha = async (fechaSeleccionada) => {
-        try {
-            const res = await api.post("/mis-reservas/validar-fecha", { fecha: fechaSeleccionada });
-            if (res.data.error) {
-                setError(res.data.error); 
-            } else {
-                setError(""); 
-            }
-        } catch (err) {
-            console.error("Error al verificar la fecha:", err);
-        }
-    };
-
+    // Manejador para enviar el formulario
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError(""); 
-    
-        // Verificar que la fecha esté en el formato correcto
-        const hoy = new Date();
-        const fechaSeleccionada = new Date(fecha);
-    
-        // Asegurar que la fecha no sea pasada
-        if (fechaSeleccionada < hoy) {
-            setError("No se pueden hacer reservas para fechas pasadas o del dia actual.");
-            return;
-        }
-    
-        // Verificar si la fecha está dentro de las 2 semanas de antelación
-        const dosSemanasDespues = new Date();
-        dosSemanasDespues.setDate(hoy.getDate() + 14);
-        if (fechaSeleccionada > dosSemanasDespues) {
-            setError("No puedes reservar con más de dos semanas de anticipación.");
-            return;
-        }
-    
-        if (!fecha || !instalacionId || !horarioId || !usuarioId) {
+
+        if (!usuario.username || !usuario.email || !usuario.password || !usuario.tipo) {
             setError("Todos los campos son obligatorios.");
             return;
         }
-    
-        const reservaActualizada = { 
-            fecha, 
-            horario: { id: horarioId }, 
-            usuario: { id: usuarioId }
-        };
-    
+
         try {
-            await api.put(`/mis-reservas/${id}`, reservaActualizada);
-            navigate("/mis-reservas"); 
+            // Enviar los datos actualizados al backend
+            await api.put(`/api/usuario/${id}`, usuario);
+            navigate("/usuarios"); 
         } catch (err) {
-            setError("Error al actualizar la reserva. Intenta de nuevo.");
+            console.error("Error al actualizar el usuario:", err);
+            setError("Error al actualizar el usuario. Intenta de nuevo.");
         }
     };
-    
-   
 
     return (
         <Container>
-            <h3>Editar Reserva</h3>
+            <h3>Editar Usuario</h3>
             {error && <div className="alert alert-danger">{error}</div>}
             <Form onSubmit={handleSubmit}>
-               
                 <Form.Group>
-                    <Form.Label>Fecha de la Reserva</Form.Label>
+                    <Form.Label>Username</Form.Label>
                     <Form.Control
-                        type="date"
-                        value={fecha}
-                        onChange={(e) => {
-                            setFecha(e.target.value);
-                            cargarHorarios(instalacionId, e.target.value);
-                            verificarFecha(e.target.value); // Verificar la fecha cuando cambia
-                        }}
+                        type="text"
+                        name="username"
+                        value={usuario.username}
+                        onChange={handleChange}
+                        required
                     />
                 </Form.Group>
 
                 <Form.Group>
-                    <Form.Label>Seleccionar Usuario</Form.Label>
-                    <Form.Select value={usuarioId} onChange={(e) => setUsuarioId(e.target.value)}>
-                        <option value="">-- Selecciona un usuario --</option>
-                        {usuarios.map(user => (
-                            <option key={user.id} value={user.id}>
-                                {user.nombre || user.fullname || user.username}
-                            </option>
-                        ))}
-                    </Form.Select>
+                    <Form.Label>Email</Form.Label>
+                    <Form.Control
+                        type="email"
+                        name="email"
+                        value={usuario.email}
+                        onChange={handleChange}
+                        required
+                    />
                 </Form.Group>
 
-               
                 <Form.Group>
-                    <Form.Label>Seleccionar Instalación</Form.Label>
-                    <Form.Select 
-                        value={instalacionId} 
-                        onChange={(e) => {
-                            setInstalacionId(e.target.value);
-                            cargarHorarios(e.target.value, fecha);
-                        }}
+                    <Form.Label>Contraseña</Form.Label>
+                    <Form.Control
+                        type="password"
+                        name="password"
+                        value={usuario.password}
+                        onChange={handleChange}
+                        required
+                    />
+                </Form.Group>
+
+                <Form.Group>
+                    <Form.Label>Tipo de Usuario</Form.Label>
+                    <Form.Select
+                        name="tipo"
+                        value={usuario.tipo}
+                        onChange={handleChange}
                     >
-                        <option value="">-- Selecciona una instalación --</option>
-                        {instalaciones.map(inst => (
-                            <option key={inst.id} value={inst.id}>{inst.nombre}</option>
-                        ))}
-                    </Form.Select>
-                </Form.Group>
-
-               
-                <Form.Group>
-                    <Form.Label>Seleccionar Horario Disponible</Form.Label>
-                    <Form.Select value={horarioId} onChange={(e) => setHorarioId(e.target.value)}>
-                        <option value="">-- Selecciona un horario --</option>
-                        {horarios.length > 0 ? (
-                            horarios.map(horario => (
-                                <option key={horario.id} value={horario.id}>
-                                    {horario.horaInicio} - {horario.horaFin}
-                                </option>
-                            ))
-                        ) : (
-                            <option value="">Sin horarios disponibles</option>
-                        )}
+                        <option value="USER">Usuario</option>
+                        <option value="ADMIN">Administrador</option>
                     </Form.Select>
                 </Form.Group>
 
                 <Button type="submit">Guardar Cambios</Button>
-                <Button variant="secondary" onClick={() => navigate("/mis-reservas")}>Cancelar</Button>
+                <Button variant="secondary" onClick={() => navigate("/usuarios")}>Cancelar</Button>
             </Form>
         </Container>
     );
 };
 
-export default EditReserva;
+export default EditUsuario;

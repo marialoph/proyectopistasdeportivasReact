@@ -23,28 +23,31 @@ function NavBar() {
 
     setIsLogged(true);
 
+    // Solo hace la solicitud si el token está presente
     const fetchUser = async () => {
       try {
         const response = await api.get("/api/usuario/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        console.log("Usuario recibido:", response.data); 
+        console.log("Usuario recibido:", response.data);
         if (response.data?.tipo) {
           setTipoUsuario(response.data.tipo.toUpperCase().trim());
-          console.log("Tipo de usuario actualizado:", response.data.tipo.toUpperCase().trim()); 
+          console.log("Tipo de usuario actualizado:", response.data.tipo.toUpperCase().trim());
         }
       } catch (err) {
         console.error("Error obteniendo usuario:", err);
         if (err.response?.status === 401) {
           clearToken();
           navigate("/login");
+        } else {
+          console.error("Error inesperado:", err.message);
         }
       }
     };
 
     fetchUser();
-  }, [location]);
+  }, []);
 
   const handleLogout = () => {
     clearToken();
@@ -65,10 +68,7 @@ function NavBar() {
             {isLogged && (
               <>
                 <Nav.Link as={Link} to="/mis-reservas">Mis reservas</Nav.Link>
-
-                  <Nav.Link as={Link} to="/usuario">Usuarios</Nav.Link>
-              
-
+                <Nav.Link as={Link} to="/usuario">Usuarios</Nav.Link>
                 <Nav.Link onClick={handleLogout}>Logout</Nav.Link>
               </>
             )}
