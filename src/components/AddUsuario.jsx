@@ -40,7 +40,7 @@ const AddUsuario = () => {
             });
 
             console.log("Usuario creado:", response.data);
-            navigate('/usuarios'); 
+            navigate('/usuario'); 
         } catch (error) {
             console.error("Error al crear usuario:", error.response ? error.response.data : error.message);
         }

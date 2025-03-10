@@ -5,7 +5,7 @@ import api from "../services/api";
 import { getToken } from "../services/auth";
 
 const EditUsuario = () => {
-  const { id } = useParams(); // Obtiene el ID del usuario desde la URL
+  const { id } = useParams(); 
   const navigate = useNavigate();
 
   // Estado para almacenar los datos del usuario
@@ -13,7 +13,7 @@ const EditUsuario = () => {
     username: "",
     email: "",
     password: "",
-    tipo: "USER", // Valor por defecto
+    tipo: "ADMIN", 
   });
 
   // Estado de carga
@@ -21,11 +21,11 @@ const EditUsuario = () => {
 
   useEffect(() => {
     const fetchUsuario = async () => {
-      const token = getToken(); // Obtiene el token guardado
+      const token = getToken(); 
 
       if (!token) {
         console.error("No hay token, redirigiendo a login...");
-        navigate("/login"); // Redirige al login si no hay token
+        navigate("/login"); 
         return;
       }
 
@@ -55,11 +55,11 @@ const EditUsuario = () => {
   // Manejador para enviar el formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = getToken(); // Obtiene el token guardado
+    const token = getToken(); 
 
     if (!token) {
       console.error("No hay token, redirigiendo a login...");
-      navigate("/login"); // Redirige al login si no hay token
+      navigate("/login"); 
       return;
     }
 
@@ -71,7 +71,7 @@ const EditUsuario = () => {
         },
       });
       console.log("Usuario actualizado:", response.data);
-      navigate("/usuarios"); // Redirige a la lista de usuarios después de la actualización
+      navigate("/usuarios"); 
     } catch (error) {
       console.error("Error al actualizar usuario:", error.response ? error.response.data : error.message);
     }
